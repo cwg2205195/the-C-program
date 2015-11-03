@@ -1,0 +1,34 @@
+#include<stdio.h>
+#include<time.h>
+main()
+{
+	int i=1,a,r;
+	printf("please input 1 ~ 100:");
+	scanf("%d",&a);
+	srand(time(NULL));
+    	{
+    		r=rand()%100;
+    	}
+   //  printf("随机数为%d\n",r);//去掉前面的注释可以看随机数是多少
+     while ( i <= 6 )
+     {
+     if ( a > r )
+        {printf("the input number is too large\n ");
+        i++;
+        scanf("%d",&a);
+        }
+      else if ( a < r )
+          {
+          	printf("the number you input is too small\n");
+          	i++;
+          	 scanf("%d",&a);
+          }
+       else
+       {
+           printf("恭喜你猜对咯(^V^)");
+           break;
+       }
+     }
+     if ( a != r )
+         printf("机会用完咯，再接再厉~_~");
+}
