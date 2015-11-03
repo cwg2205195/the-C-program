@@ -1,0 +1,25 @@
+#include<stdio.h>
+main()
+{
+	int x=1000,sum=0,i=2,flag=1,n=1;
+	for (;x>1;x--)
+	{
+		for (;i<=x/2;i++)
+		{
+			if ( x % i == 0){
+			flag=0;
+			break;}
+		}
+		if ( flag )
+		{
+		printf("%d+",x);
+		sum+=x;
+		n++;
+		}
+		if (n==11)
+		break;
+		flag=1;
+		i=2;
+	}
+	printf("\b=%d",sum);
+}
