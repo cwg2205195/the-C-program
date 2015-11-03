@@ -1,0 +1,18 @@
+#include<stdio.h>
+#include<math.h>
+main()
+{
+	int year;
+	double amount,principal=1000.0,rate=5.0;
+	for (;rate<=10;rate++){
+		printf("current rate:%d%%\n",(int)rate);
+					printf("%s%21s \n","Year","Amount on deposit");
+	for ( year=1;year<=10;year++)
+	{
+		amount=principal*pow(1+rate/100.0,year);
+		printf("%4d%21.2f\n",year,amount);
+	}
+	year=1;
+	printf("﹉﹉﹉﹉﹉﹉﹉﹉\n");
+	}
+}
