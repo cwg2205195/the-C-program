@@ -1,0 +1,101 @@
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+#include<math.h>
+int num(int );
+void t(void );
+void f(void );
+main()
+{
+	int a,b,c,d,level,ans,flag=0;
+	srand(time(NULL));
+	printf("please choose level\n");	scanf("%d",&level);//选择等级
+	printf("选择1做加，选择2做减，选择3做乘，选择4做除，选择5做复合\n");
+	scanf("%d",&d);//选择符号
+	switch (d)
+    {
+	case 1:c='+';break;
+	case 2:c='-';break;
+	case 3:c='*';break;
+	case 4:c='/';break;
+	default:break;
+	}
+	a=num(level);
+	b=num(level);
+	printf("%d %c %d = ?\n",a,c,b);
+	scanf("%d",&ans);
+	while ( 1 )
+	{
+		switch (c){
+		case '+' :
+		if ( ans == (a + b)){
+			t();flag=1;}
+		else
+		 {
+		 	f();
+		 	scanf("%d",&ans);
+		 }
+		 break;
+		 case '-' :
+		 if ( ans == ( a - b )){
+		 t();flag=1;}
+		 else
+		 {
+		 	f();
+		 	scanf("%d",&ans);
+		 }
+		 break;
+		 case '*' :
+		 if ( ans == ( a * b )){
+		 t();flag=1;}
+		 else
+		 {
+		 	f();
+		 	scanf("%d",&ans);
+		 }
+		 break;
+		 case '/' :
+		 if ( ans == ( a / b )){
+		 t();flag=1;}
+		 else
+		 {
+		 	f();
+		 	scanf("%d",&ans);
+		 }
+		 break;  }
+		 if (flag != 0)
+		 break;
+	}
+}
+int num(int level)
+{
+	int a;
+	a=pow(10,level);
+	return rand()%a+1;
+}
+void t( void )
+{
+	int a;
+	srand(time(NULL));
+	a=rand()%3+1;
+	switch ( a ){
+	case 1:printf("Nice job!\n");
+	break;
+	case 2:printf("Well done!\n");
+	break;
+	case 3:printf("Excellent !\n");
+	break;}
+}
+void f( void )
+{
+	int a;
+	srand(time(NULL));
+	a=rand()%3+1;
+	switch ( a ){
+	case 1:printf("Keep trying!\n");
+	break;
+	case 2:printf("Work harder!\n");
+	break;
+	case 3:printf("Do better next time !\n");
+	break;}
+}
