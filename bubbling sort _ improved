@@ -1,0 +1,24 @@
+#include<stdio.h>
+#define N 10
+main()
+{
+	int a[N]={5,9,11,1,4,-10,3,6,-11,0},j,i,k=9,m,n=0;
+	printf("原始数组:\n");
+		for (i=0;i<9;i++)
+	printf("a[%d]=%d\n",i,a[i]);
+	for (j=0;j<9;j++)
+	{
+	for (i=0;i<k;i++){
+	if ( a[i] > a[i+1])
+	{
+		m=a[i+1];
+		a[i+1]=a[i];
+		a[i]=m;
+	}
+	n++;}
+	k--;
+	}
+	printf("排列后::\n比较次数:%d\n",n);
+	for (i=0;i<9;i++)
+	printf("a[%d]=%d\n",i,a[i]);
+}
