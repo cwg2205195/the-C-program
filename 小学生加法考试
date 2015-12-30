@@ -1,0 +1,121 @@
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+void dis(void);
+void play(void);
+main()
+{
+	int level,type,wrong,i;
+	float num1,num2,ans;
+	char f;
+	srand(time(NULL));
+	while (1)
+	{
+		dis();
+		printf(" 请输入能力级别：");
+		scanf("%d",&level);
+		switch (level)
+		{
+			case 1:level=9;
+					break;
+			case 2:level=100;
+					break;
+			case 3:level=1000;
+					break;
+			case 4:level=10000;
+					break;
+			default:
+				system("cls");
+				printf("输入错误\n");
+				continue;
+				break;
+		}
+		play();
+		printf("请输入类型：");
+		scanf("%d",&type);
+	
+		for (i=1;i<=10;i++)
+		{
+			num1=rand()%level+1;
+			num2=rand()%level+1;
+				switch (type)
+		{
+			case 1:		f='+';
+						printf("%.0f%c%.0f=",num1,f,num2);
+						scanf("%f",&ans);
+						if (ans == num1+num2)
+								printf("OK\n");
+						else
+							{	wrong++;
+								printf("wrong\n");
+							}
+					break;
+			case 2:		f='-';
+						printf("%.0f%c%.0f=",num1,f,num2);
+						scanf("%f",&ans);
+						if (ans == num1-num2)
+								printf("OK\n");
+							else
+							{	wrong++;
+								printf("wrong\n");
+							}
+					break;
+			case 3:		f='*';
+						printf("%.0f%c%.0f=",num1,f,num2);
+						scanf("%f",&ans);
+						if (ans == num1*num2)
+								printf("OK\n");
+						else
+							{	wrong++;
+								printf("wrong\n");
+							}
+					break;
+			case 4:		f='/';
+						printf("%.0f%c%.0f=",num1,f,num2);
+						scanf("%f",&ans);
+						if (ans == num1/num2)
+								printf("OK\n");
+						else
+							{	wrong++;
+								printf("wrong\n");
+							}
+					break;
+			default:
+				system("cls");
+				printf("输入错误\n");
+				continue;
+				break;
+		}
+		}
+		printf("总分=%d\n\n",(10-wrong)*10);
+		printf("是否继续测试（Y/N）?");
+		fflush(stdin);
+		scanf("%c",&f);
+		printf("%c",f);
+		if ((f != 'y') && (f != 'Y'))
+				break;
+		else
+				system("cls");
+	}
+ 
+}
+
+void dis(void)
+{
+	printf("********能力级别********\n");
+	printf("    1....一位数字      |\n");
+	printf("    2....二位数字      |\n");
+	printf("    3....三位数字      |\n");
+	printf("    4....四位数字      |\n");
+	printf("***********************\n");
+}
+
+void play(void)
+{
+	printf("********操作类型**************\n");
+	printf("*   1....做加法              *\n");
+	printf("*   2....做减法              *\n");
+	printf("*   3....做乘法              *\n");
+	printf("*   4....做除法(保留一位小数)*\n");
+	printf("******************************\n");
+}
