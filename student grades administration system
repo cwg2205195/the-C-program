@@ -1,0 +1,479 @@
+#include<stdio.h>
+#include<string.h>
+#include<ctype.h>
+#include<stdlib.h>
+typedef struct info{int id;
+				char name[30];
+				char sex[4];
+				float c;//the grade of c
+				float math;//the grade of math
+				float chi;//the grade of chinese
+				float cpl;//the grade of Assembly
+				float his;//the grade of history
+				float sum;//the sum of all grades
+				float avg;//the average of all grades
+}INFO; 
+void dis(void);
+void write(void);
+void read(void);
+void find(void);
+void edit(void);
+void insert(void);
+void del(void);
+int right(INFO **,char *);
+
+main()
+{
+	int choice;
+	dis();
+	scanf("%d",&choice); 
+	while (choice != 7 )
+	{
+		switch (choice)
+		{
+			case 1:
+					system("cls");
+					write();
+					dis();
+					scanf("%d",&choice);
+					break;
+			case 2:
+					system("cls");
+					read();
+					dis();
+					scanf("%d",&choice);
+					break;
+			case 3:
+					system("cls");
+					del();
+					dis();
+					scanf("%d",&choice);
+					break;
+			case 4:
+					system("cls");
+					find();
+					dis();
+					scanf("%d",&choice);
+					break;
+			case 5:
+					system("cls");
+					edit();
+					dis();
+					scanf("%d",&choice);
+					break;
+			case 6:
+					system("cls");
+					insert();
+					dis();
+					scanf("%d",&choice);
+					break;
+			default:
+					system("cls");
+					printf("输入错误！\n\n");
+					dis();
+					scanf("%d",&choice);
+					break; 
+		}
+	}
+}
+
+void dis(void)
+{
+	printf("##### ##### ##### 成绩管理系统 ##### ##### #####\n");
+	printf("##### ##### ##### 请选择功能  ###### ##### #####\n");
+	printf("##### ##### ##### 1创建新的文件 ##### ##### #####\n");
+	printf("##### ##### ##### 2从文件中读取数据### ##### #####\n");
+	printf("##### ##### ##### 3删除学生信息  ##### ##### #####\n");
+	printf("##### ##### ##### 4查询学生信息 ##### ##### #####\n");
+	printf("##### ##### ##### 5修改学生信息 ##### ##### #####\n");
+	printf("##### ##### ##### 6插入学生信息 ##### ##### #####\n");
+	printf("##### ##### ##### 7  退出系统   ##### ##### #####\n");
+ } 
+ 
+ void write(void)
+ {
+ 	INFO inf={0," "," ",0,0,0,0,0,0,0},*ptr=&inf;
+ 	FILE *fp;
+ 	char inp[100],path[100];
+ 	int i;
+ 	printf("输入路径以及文件名：(eg:c:\\file.txt)\n");
+ 	fflush(stdin);
+ 	gets(path);
+ 	if ((fp=fopen(path,"w+"))==NULL)
+ 		{
+ 			printf("无法创建文件！\n");
+ 			return; 
+		}
+ 	else
+ 	{
+ 		fseek(fp,0,SEEK_SET);
+ 		for (i=0;i<100;i++)
+ 		 fwrite(&inf,sizeof(INFO),1,fp); //创建100个空的数据 
+ 		printf("请输入学号、姓名、性别、c语言成绩、高数成绩、大学语文成绩、汇编成绩、中近史成绩  \n");
+ 		fflush(stdin);
+ 		gets(inp);
+ 		while(!feof(stdin))
+ 		{
+ 			if ( right(&ptr,inp) )
+ 				{
+ 					fseek(fp,sizeof(INFO)*((ptr)->id-1),SEEK_SET);
+ 					fwrite(ptr,sizeof(INFO),1,fp);
+				}
+ 			printf("请输入学号、姓名、性别、c语言成绩、高数成绩、大学语文成绩、汇编成绩、中近史成绩  \n");
+ 			fflush(stdin);
+ 			gets(inp);
+		 }
+	 }
+	 printf("文件创建完毕！\n");
+	 fclose(fp);
+  }
+  
+int right(INFO ** ptr,char *inp)//检验是否正确 
+  {
+  	char *t=inp;
+  	int flag=0;
+  	INFO info=**ptr;
+  	printf("origin chararcter:--%s--\n\n",inp);
+  	while (*inp != '\0')
+  	{
+  		inp++;
+  		if (flag ==0 && !isgraph(*inp))
+  		{
+  			*inp='\0';
+  			if ((*ptr)->id=atoi(t))
+  			{
+  				t=inp+1;
+  				inp++;
+  				flag++;
+			}
+			else
+			{
+				printf("输入有误！重新输入！\n");
+				return 0;
+			}
+		}
+		if (flag == 1 && !isgraph(*inp))
+		{
+			*inp='\0';
+			strcpy((*ptr)->name,t);
+			t=inp+1;
+			inp++;
+			flag++;
+		}
+		if (flag == 2 && !isgraph(*inp))
+		{
+			*inp='\0';
+			strcpy((*ptr)->sex,t);
+			t=inp+1;
+			inp++;
+			flag++;
+		}
+		if (flag ==3 && !isgraph(*inp))
+  		{
+  			*inp='\0';
+  			if ((*ptr)->c=atof(t))
+  			{
+  				t=inp+1;
+  				inp++;
+  				flag++;
+			}
+			else
+			{
+				printf("输入有误！重新输入！\n");
+				return 0;
+			}
+		}
+		if (flag ==4 && !isgraph(*inp))
+  		{
+  			*inp='\0';
+  			if ((*ptr)->math=atof(t))
+  			{
+  				t=inp+1;
+  				inp++;
+  				flag++;
+			}
+			else
+			{
+				printf("输入有误！重新输入！\n");
+				return 0;
+			}
+		}
+		if (flag ==5 && !isgraph(*inp))
+  		{
+  			*inp='\0';
+  			if ((*ptr)->chi=atof(t))
+  			{
+  				t=inp+1;
+  				inp++;
+  				flag++;
+			}
+			else
+			{
+				printf("输入有误！重新输入！\n");
+				return 0;
+			}
+		}
+		if (flag ==6 && !isgraph(*inp))
+  		{
+  			*inp='\0';
+  			if ((*ptr)->cpl=atof(t))
+  			{
+  				t=inp+1;
+  				inp++;
+  				flag++;
+			}
+			else
+			{
+				printf("输入有误！重新输入！\n");
+				return 0;
+			}
+		}
+		if (flag ==7 && !isgraph(*inp))
+  		{
+  			*inp='\0';
+  			if ((*ptr)->his=atof(t))
+  			{
+  				t=inp+1;
+  				inp++;
+  				flag++;
+			}
+			else
+			{
+				printf("输入有误！重新输入！\n");
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+void read(void)
+{
+  	FILE *fp;
+  	char path[100];
+  	INFO info;
+  	printf("输入路径以及文件名：(eg:c:\\file.txt)\n");
+	fflush(stdin); 
+	gets(path);
+	if ((fp=fopen(path,"r"))==NULL)
+	{	printf("无法打开文件，请检查路径。\n");
+	  	return;
+	}
+	else
+	{
+		printf("学号\t姓名\t性别\tc语言成绩  高数成绩  大学语文成绩  汇编成绩  中近史成绩  \n");
+		fread(&info,sizeof(INFO),1,fp);
+		while(!feof(fp))
+		{
+			if (info.id != 0)//数据不为空才输出
+				printf("%d\t%s\t%s   %.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",info.id,info.name,info.sex,info.c,info.math,info.chi,info.cpl,info.his);
+			fread(&info,sizeof(INFO),1,fp); 
+		}
+	}
+	printf("\n\n文件读取完毕！\n");
+	fclose(fp);
+}
+
+void del()
+{
+	FILE *fp;
+	char path[100],name[10];
+	int idn,choice;
+	INFO tmp,info={0," "," ",0,0,0,0,0};
+	printf("输入路径以及文件名：(eg:c:\\file.txt)\n");
+	fflush(stdin);
+	gets(path);
+	if ((fp=fopen(path,"r+"))==NULL)
+	{	printf("无法打开文件，请检查路径。\n");
+	  	return;
+	}
+	else
+	{
+		printf("请选择以何种形式查找：\n1：按学号\n2：按姓名\n");
+		scanf("%d",&choice);
+		switch (choice)
+		{
+			case 1:
+					printf("请输入学号：");
+					scanf("%d",&idn);
+					fseek(fp,sizeof(INFO)*(idn-1),SEEK_SET);//如果发生错误，就把这句拷贝到fwrite（）上面 
+					fread(&tmp,sizeof(INFO),1,fp);
+					printf("id=%d\tname=%s\n",tmp.id,tmp.name);
+					if ( tmp.id  == idn )
+					{
+						fseek(fp,sizeof(INFO)*(idn-1),SEEK_SET);
+						fwrite(&info,sizeof(INFO),1,fp);
+						printf("\n删除成功！\n");
+					}
+					else
+					printf("未能找到此学生！\n");
+					break;
+			case 2:
+					printf("请输入名字：");
+					scanf("%s",name);
+					fread(&tmp,sizeof(INFO),1,fp);
+					while (!feof(stdin))
+					{
+						if (tmp.id != 0 && !strcmp(tmp.name,name))
+						{
+						//	printf("tmp.name=%s\tname=%s\n",tmp.name,name);
+							fseek(fp,sizeof(INFO)*(tmp.id-1),SEEK_SET);
+							fwrite(&info,sizeof(INFO),1,fp);
+							printf("\n删除成功！\n");
+							fclose(fp);
+							return;
+						}
+						else
+							fread(&tmp,sizeof(INFO),1,fp);
+					}
+					printf("未能找到此学生！\n");
+					break;
+			default:
+					printf("输入错误！\n");
+					return ;
+		 } 
+	}
+	fclose(fp);
+ }
+
+void find()
+{
+	FILE *fp;
+	INFO info;
+	char path[100],name[10];
+	int choice,idn;
+	printf("输入路径以及文件名：(eg:c:\\file.txt)\n");
+	fflush(stdin);
+	gets(path);
+	if ((fp=fopen(path,"r"))==NULL)
+	{	printf("无法打开文件，请检查路径。\n");
+	  	return;
+	}
+	else
+	{
+		printf("请选择查找方式：\n1:按学号查找\n2:按姓名查找\n");
+		scanf("%d",&choice);
+		switch (choice)
+		{
+			case 1:
+					printf("请输入学号：");
+					scanf("%d",&idn);
+					fread(&info,sizeof(INFO),1,fp);
+					while (!feof(fp))
+					{
+						if (info.id != 0 && info.id == idn)
+						{
+							printf("学号\t姓名\t性别\tc语言成绩  高数成绩  大学语文成绩  汇编成绩  中近史成绩  \n");
+							printf("%d\t%s\t%s   %.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",info.id,info.name,info.sex,info.c,info.math,info.chi,info.cpl,info.his);
+							return ;
+						}
+						else
+						fread(&info,sizeof(INFO),1,fp);
+					}
+					printf("未能找到匹配的学生信息！\n");
+					break;
+			case 2:
+					printf("请输入名字：");
+					scanf("%s",name);
+					fread(&info,sizeof(INFO),1,fp);
+					while (!feof(fp))
+					{
+						if ( !strcmp(info.name,name))
+						{
+							printf("学号\t姓名\t性别\tc语言成绩  高数成绩  大学语文成绩  汇编成绩  中近史成绩  \n");
+							printf("%d\t%s\t%s   %.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",info.id,info.name,info.sex,info.c,info.math,info.chi,info.cpl,info.his);
+							return ;
+						}
+						else
+							fread(&info,sizeof(INFO),1,fp);
+					}
+					printf("未能找到匹配的学生信息！\n");
+					break;
+			default:
+					printf("输入错误！");
+					break;
+		}
+	}
+	fclose(fp);
+} 
+
+ void edit()
+ {
+ 	FILE *fp;
+	INFO tmp,*t=&tmp;
+	int idn;
+	char path[100],n[100];
+	printf("输入路径以及文件名：(eg:c:\\file.txt)\n");
+	fflush(stdin);
+	gets(path);
+	if ((fp=fopen(path,"r+"))==NULL)
+	{	printf("无法打开文件，请检查路径。\n");
+	  	return;
+	}
+	else
+	{
+		printf("请输入要修改的学号：");
+		scanf("%d",&idn);
+		fread(&tmp,sizeof(INFO),1,fp);
+		while (!feof(fp))
+		{
+			if (tmp.id != 0 && tmp.id == idn)
+			{
+				printf("原始数据：\n");
+				printf("%d\t%s\t%s   %.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",tmp.id,tmp.name,tmp.sex,tmp.c,tmp.math,tmp.chi,tmp.cpl,tmp.his);
+				printf("请输入学号、姓名、性别、c语言成绩、高数成绩、大学语文成绩、汇编成绩、中近史成绩  \n");
+				fflush(stdin);
+				gets(n);
+				if (right(&t,n))
+					{
+						fseek(fp,sizeof(INFO)*(t->id - 1),SEEK_SET);
+						fwrite(t,sizeof(INFO),1,fp);
+						printf("插入成功！\n");
+						fclose(fp);
+						return;
+					}//printf("%d\t%s\t%s   %.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",tmp.id,tmp.name,tmp.sex,tmp.c,tmp.math,tmp.chi,tmp.cpl,tmp.his);
+			}
+			else
+				fread(&tmp,sizeof(INFO),1,fp);
+		}
+		printf("未能找到匹配的学号！\n");
+	}
+	fclose(fp);
+  }
+
+void insert()
+{
+	FILE *fp;
+	char n[100],path[100];
+	INFO tmp,*t=&tmp,info;
+	printf("输入路径以及文件名：(eg:c:\\file.txt)\n");
+	fflush(stdin);
+	gets(path);
+	if ((fp=fopen(path,"r+"))==NULL)
+	{	printf("无法打开文件，请检查路径。\n");
+	  	return;
+	}
+	else
+	{
+		printf("请输入学号、姓名、性别、c语言成绩、高数成绩、大学语文成绩、汇编成绩、中近史成绩  \n");
+		gets(n);
+		if (right(&t,n))
+		{
+			fread(&info,sizeof(INFO),1,fp);
+			while (!feof(fp))
+			{
+				if (t->id == info.id)
+				{
+					printf("该生信息已存在！\n");
+					return;
+				}
+				else
+					fread(&info,sizeof(INFO),1,fp);	
+			}
+		}
+		fseek(fp,(t->id-1)*sizeof(INFO),SEEK_SET);
+		fwrite(t,sizeof(INFO),1,fp);
+		printf("插入成功！\n");
+		fclose(fp);
+	}
+ } 
