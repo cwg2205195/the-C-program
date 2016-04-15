@@ -1,0 +1,104 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define Maxline 100
+typedef char ET;
+typedef struct QList{
+        ET data;
+		struct QList *next; 
+}QL;
+typedef struct Point{
+	QL *front,*tail;
+}point;
+void initQ(point *&p)
+{
+	p=(point *)malloc(sizeof(point));
+    p->front=p->tail=NULL;
+}
+void desQ(point *&p)
+{
+	QL *t=p->front;
+	while(t)
+	{
+		p->front=t->next;
+		free(t);
+		t=p->front;
+	}
+    free(p);
+}
+bool empty(point *p)
+{
+    return (p->front==NULL);
+}
+bool enQ(point *&p,ET a)
+{
+    QL *t;
+    t=(QL *)malloc(sizeof(QL));
+    t->data=a;
+    if (p->front==NULL)
+   	{
+   		t->next=NULL;
+   		p->front=p->tail=t;
+   		return true;
+	}
+	t->next=p->tail->next;
+	p->tail->next=t;
+	p->tail=t; 
+   	return true;
+}
+bool deQ(point *&p,ET &a)
+{
+    QL *t=p->front;
+    if(!t)
+	return false;
+	p->front=t->next;
+	a=t->data;
+	free(t);
+	if(p->front==NULL)
+	p->tail=NULL;
+    return true;
+}
+void show(point *h)
+{
+	QL *t=h->front;
+	while(t)
+	{
+		printf("%c ",t->data);
+		t=t->next;
+	}
+}
+void count(point *p)
+{
+	int i=0;
+	QL *t=p->front;
+	while(t)
+	{i++;t=t->next;}
+	printf("%d\n",i);
+}
+int main()
+{
+	point *h;
+	int i,n;
+	ET t;
+	initQ(h);
+	if(empty(h));
+		printf("yes\n");
+	scanf("\n%d",&n);
+	for(i=0;i<n;i++)
+		{
+			scanf("\n%c",&t);
+			enQ(h,t);
+		}
+	deQ(h,t);
+	printf("%c\n",t);
+	count(h);
+	fflush(stdin);
+	scanf("%d",&n);
+	for(i=0;i<n;i++)
+		{
+			scanf("\n%c",&t);
+			enQ(h,t);
+		}
+	count(h);
+	show(h);
+    return 0;
+}
