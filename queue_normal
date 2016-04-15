@@ -1,0 +1,84 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define Maxline 100
+typedef char ET;
+typedef struct QList{
+        ET data[Maxline];
+        int front,tail;
+}QL;
+
+void initQ(QL *&p)
+{
+        p=(QL*)malloc(sizeof(QL));
+        p->front=p->tail=0;
+}
+void desQ(QL *&p)
+{
+        free(p);
+}
+bool empty(QL *p)
+{
+    return (p->front==p->tail);
+}
+bool enQ(QL *&p,ET a)
+{
+        if ((p->tail+1)%Maxline==p->front)
+                return false;
+        p->tail=(p->tail+1)%Maxline;
+        p->data[p->tail]=a;
+        return true;
+}
+bool deQ(QL *&p,ET &a)
+{
+        if (p->front==p->tail)
+                return false;
+        p->front=(p->front+1)%Maxline;
+        a=p->data[p->front];
+        return true;
+}
+void show(QL *h)
+{
+	int i=h->front;
+	while((i+1)%Maxline!=h->tail)
+	printf("%c ",h->data[++i]);
+	printf("%c ",h->data[++i]);
+}
+void count(QL *h)
+{
+	int i=0;
+	while((h->front+1)%Maxline!=h->tail&&(h->front!=h->tail))
+	{
+	i++;
+	h->front++;
+	}
+	printf("%d\n",i+1);
+}
+int main()
+{
+	QL *h;
+	int i,n;
+	ET t;
+	initQ(h);
+	if(empty(h));
+		printf("yes\n");
+	scanf("\n%d",&n);
+	for(i=0;i<n;i++)
+		{
+			scanf("\n%c",&t);
+			enQ(h,t);
+		}
+	deQ(h,t);
+//	count(h);
+	printf("%c\n%d\n",t,h->tail-h->front);
+	fflush(stdin);
+	scanf("%d",&n);
+	for(i=0;i<n;i++)
+		{
+			scanf("\n%c",&t);
+			enQ(h,t);
+		}
+	printf("%d\n",h->tail-h->front);//there still are problems inside the algorithm, since it's a circle queue,hence ,the tail -
+	show(h);// front would be wrong for calculating the length of the queue.
+	count(h);
+    return 0;
+}
