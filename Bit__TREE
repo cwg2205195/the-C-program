@@ -1,0 +1,112 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#define MAX 100
+typedef char ElemType;
+typedef struct node
+{
+	ElemType data;
+	struct node *lchild;		//pointer to left child
+	struct node *rchild;		//pointer to right child
+}BTNODE;
+/*int TreeHeight(BTree *t)
+{
+	BTree *p;
+	int m,max=0;
+	if(NULL==t)
+		return 0;
+	else if (t->chi==NULL)		//if it doesn't have a child ,then the length is 1
+		return 1;
+	else
+	{
+		p=t->chi;
+		while(p!=NULL)
+		{
+			m=TreeHeight(p);
+			if(max>m)max=m;
+			p=p->bro;
+		}
+	}
+	return (max+1);
+}*/
+void CreateBTNode(BTNODE *&b,char *str)
+{
+	int top=-1,k,j=0;
+	char ch;
+	BTNODE *St[MAX],*p;
+	b=NULL;
+	ch=str[j];
+	while(ch!='\0')
+	{
+		switch(ch)
+		{
+			case '(':
+				top++;
+				St[top]=p;
+				k=1;
+				//handling the left child
+				break;
+			case ')':
+				top--;
+				break;
+			case ',':
+				k=2;
+				break;
+			default:			//if it's a character then allocate a space for it 
+			p=(BTNODE*)malloc(sizeof(BTNODE));
+			p->data=ch;p->lchild=p->rchild=NULL;
+			if(b==NULL)		//the tree is empty then the root node is the first created *p
+				b=p;
+			else			//the tree has been craeted 
+			{
+				switch(k)
+				{
+					case 1:
+						St[top]->lchild=p;
+						break;
+					case 2:
+						St[top]->rchild=p;
+						break;
+				}
+			}
+		}
+		j++;		//point to the next character
+		ch=str[j];
+	}
+}
+int BTNodeHeight(BTNODE *b)
+{
+	int lchild,rchild;
+	if(b==NULL)return 0;
+	else
+	{
+		lchild=BTNodeHeight(b->lchild);
+		rchild=BTNodeHeight(b->rchild);
+		return (lchild>rchild)?(lchild+1):(rchild+1);
+	}
+}
+void DispBTNode(BTNODE *b)
+{
+	if(b!=NULL)
+	{
+		printf("%c",b->data);
+		if(b->lchild!=NULL||b->rchild!=NULL)
+		{
+			printf("(");		//only if it has child node
+			DispBTNode(b->lchild);		//...output the left tree
+			if(b->rchild!=NULL)printf(",");		//only if is has right child 
+			DispBTNode(b->rchild);
+			printf(")");
+		}
+	}
+}
+int main()
+{
+	char buff[4096],*p;
+	BTNODE *b=NULL;
+	//read(STDIN_FILENO,buff,4096);
+	scanf("%s",buff);
+	p=buff;
+	CreateBTNode(b,p);
+	DispBTNode(b);
+}
