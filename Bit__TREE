@@ -9,26 +9,6 @@ typedef struct node
 	struct node *lchild;		//pointer to left child
 	struct node *rchild;		//pointer to right child
 }BTNODE;
-/*int TreeHeight(BTree *t)
-{
-	BTree *p;
-	int m,max=0;
-	if(NULL==t)
-		return 0;
-	else if (t->chi==NULL)		//if it doesn't have a child ,then the length is 1
-		return 1;
-	else
-	{
-		p=t->chi;
-		while(p!=NULL)
-		{
-			m=TreeHeight(p);
-			if(max>m)max=m;
-			p=p->bro;
-		}
-	}
-	return (max+1);
-}*/
 void CreateBTNode(BTNODE *&b,char *str)
 {
 	int top=-1,k,j=0;
@@ -100,6 +80,10 @@ void DispBTNode(BTNODE *b)
 		}
 	}
 }
+void printchild(BTNODE *b,int x)
+{
+	
+}
 int main()
 {
 	char buff[4096],*p;
@@ -109,4 +93,5 @@ int main()
 	p=buff;
 	CreateBTNode(b,p);
 	DispBTNode(b);
+	printf("%d\n",BTNodeHeight(b));
 }
