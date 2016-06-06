@@ -1,0 +1,211 @@
+#include<windows.h>
+#include<winnt.h>
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+void file_head(int offset,IMAGE_NT_HEADERS32 NT_head)	//Done
+{
+	/*typedef struct _IMAGE_FILE_HEADER {
+      WORD Machine;
+      WORD NumberOfSections;
+      DWORD TimeDateStamp;
+      DWORD PointerToSymbolTable;
+      DWORD NumberOfSymbols;
+      WORD SizeOfOptionalHeader;
+      WORD Characteristics;
+    } IMAGE_FILE_HEADER,*/
+    offset+=4;
+	printf("\nNT_HEADER32\n\n\n");
+	printf("Offset		value		description\n");
+	printf("------------------------------------\n");
+	printf("%08X	%04X		machine code \n",offset,NT_head.FileHeader.Machine);
+	printf("%08X	%04X		Number of Sections\n",offset+sizeof(NT_head.FileHeader.NumberOfSections),NT_head.FileHeader.NumberOfSections);
+	printf("%08X	%04X		size of optional header \n",offset+16,NT_head.FileHeader.SizeOfOptionalHeader);
+	printf("%08X	%04X		characteristic \n",offset+18,NT_head.FileHeader.Characteristics);
+	printf("------------------------------------\n");
+	printf("\n\n\n");
+	return ;
+}
+void Optional_head(int offset,IMAGE_NT_HEADERS32 NT_head)
+{
+	/*
+	typedef struct _IMAGE_OPTIONAL_HEADER {
+
+      WORD Magic;
+      BYTE MajorLinkerVersion;
+      BYTE MinorLinkerVersion;
+      DWORD SizeOfCode;
+      DWORD SizeOfInitializedData;
+      DWORD SizeOfUninitializedData;
+      DWORD AddressOfEntryPoint;
+      DWORD BaseOfCode;
+      DWORD BaseOfData;
+      DWORD ImageBase;
+      DWORD SectionAlignment;
+      DWORD FileAlignment;
+      WORD MajorOperatingSystemVersion;
+      WORD MinorOperatingSystemVersion;
+      WORD MajorImageVersion;
+      WORD MinorImageVersion;
+      WORD MajorSubsystemVersion;
+      WORD MinorSubsystemVersion;
+      DWORD Win32VersionValue;
+      DWORD SizeOfImage;
+      DWORD SizeOfHeaders;
+      DWORD CheckSum;
+      WORD Subsystem;
+      WORD DllCharacteristics;
+      DWORD SizeOfStackReserve;
+      DWORD SizeOfStackCommit;
+      DWORD SizeOfHeapReserve;
+      DWORD SizeOfHeapCommit;
+      DWORD LoaderFlags;
+      DWORD NumberOfRvaAndSizes;
+      IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+    } IMAGE_OPTIONAL_HEADER32
+	*/
+	printf("\n\n\n\t\t\tNT_Optional_Head\n\n\n");
+	if(NT_head.OptionalHeader.Magic==0x10b)
+		printf("\t\t\t32 bit head\nEntry point@\t%08X\n",NT_head.OptionalHeader.ImageBase+NT_head.OptionalHeader.AddressOfEntryPoint);
+	else if  (NT_head.OptionalHeader.Magic==0x20b)
+		printf("\t\t\t64 bit head\n");
+	else
+		{
+			printf("\t\t\tUnknow head !\nExit!\n");
+			return;
+		}
+	printf("Offset		value		description\n");
+	printf("------------------------------------\n");
+	printf("%08X	%08X	Entry point(RVA) \n",offset+16,NT_head.OptionalHeader.AddressOfEntryPoint);
+	printf("%08X	%08X	Image Base(RVA) \n",offset+28,NT_head.OptionalHeader.ImageBase);
+	printf("%08X	%08X	Base of Code \n",offset+20,NT_head.OptionalHeader.BaseOfCode);
+	printf("%08X	%08X	Base of Data \n",offset+24,NT_head.OptionalHeader.BaseOfData);
+	printf("%08X	%08X	Size of Code \n",offset+4,NT_head.OptionalHeader.SizeOfCode);
+	printf("%08X	%08X	Size of Initialized data \n",offset+8,NT_head.OptionalHeader.SizeOfInitializedData);
+	printf("%08X	%08X	Size of Uninitialized data \n",offset+12,NT_head.OptionalHeader.SizeOfUninitializedData);
+ 	printf("%08X	%08X	Section Alignment \n",offset+32,NT_head.OptionalHeader.SectionAlignment);
+ 	printf("%08X	%08X	File Alignment \n",offset+36,NT_head.OptionalHeader.FileAlignment);
+ 	printf("%08X	%08X	Size of Image \n",offset+48,NT_head.OptionalHeader.SizeOfImage);
+ 	printf("%08X	%08X	Size of Headers \n",offset+52,NT_head.OptionalHeader.SizeOfHeaders);
+	printf("%08X	%08X	Number of Rva And Sizes \n",offset+80,NT_head.OptionalHeader.NumberOfRvaAndSizes);
+ 	printf("------------------------------------\n");
+ } 
+ void IAT(IMAGE_DATA_DIRECTORY data)
+{
+	unsigned int offset=data.VirtualAddress;
+	lseek(fd,offset,SEEK_SET);
+//	printf("Offset=%08X=%d\n",offset,offset);
+//	printf("Size=%X=%d",data.Size,data.Size);
+	return;
+}
+void dataDir(IMAGE_NT_HEADERS32 NT_head,IMAGE_SECTION_HEADER *section_p)
+{
+	int i=0,j; 
+	IAT(NT_head.OptionalHeader.DataDirectory[1]);
+	printf("\n------------------------------------\n");
+	printf("Offset		value		description\n");
+	for(i;i<NT_head.FileHeader.NumberOfSections;i++)
+	{
+		j=0;
+		printf("Name:");
+		while((section_p+i)->Name[j]!=0)
+		printf("%c",(section_p+i)->Name[j++]);
+		printf("\n%08X	%08X	Raw Offset\n",0,(section_p+i)->PointerToRawData);
+		printf("%08X	%08X	Raw Size\n",0,(section_p+i)->SizeOfRawData);
+		printf("%08X	%08X	Virtual Address\n\n",0,(section_p+i)->VirtualAddress);
+	//	section_p+=sizeof(IMAGE_SECTION_HEADER);
+	//break;
+	}
+	/*typedef struct _IMAGE_DATA_DIRECTORY {
+      DWORD VirtualAddress;
+      DWORD Size;
+    } IMAGE_DATA_DIRECTORY,*PIMAGE_DATA_DIRECTORY;*/
+	return;
+}
+void menu(int offset,IMAGE_NT_HEADERS32 NT_head,IMAGE_SECTION_HEADER *section_p) 
+{
+	int choice;
+	printf("What info do u need?\n1----->File info \n2----->Optional info\n3----->Clean\n4---->Section Info\n5---->Exit\n");
+	scanf("%d",&choice);
+	while(choice!=5)
+	switch(choice)
+	{
+		case 1:
+			file_head(offset,NT_head);
+			printf("What info do u need?\n1----->File info \n2----->Optional info\n3----->Clean\n4---->Section Info\n5---->Exit\n");
+			scanf("%d",&choice);
+			break;
+		case 2:
+			Optional_head(offset+sizeof(NT_head.FileHeader),NT_head);
+			printf("What info do u need?\n1----->File info \n2----->Optional info\n3----->Clean\n4---->Section Info\n5---->Exit\n");
+			scanf("%d",&choice);
+			break;
+		case 3:
+			system("cls") ;
+			printf("What info do u need?\n1----->File info \n2----->Optional info\n3----->Clean\n4---->Section Info\n5---->Exit\n");
+			scanf("%d",&choice);
+			break;
+		case 4:
+			dataDir(NT_head,section_p);
+			printf("What info do u need?\n1----->File info \n2----->Optional info\n3----->Clean\n4---->Section Info\n5---->Exit\n");
+			scanf("%d",&choice);
+			break;
+		
+		case 5:
+			return;
+			//file_head(offset,NT_head);
+	//Optional_head(offset+sizeof(NT_head.FileHeader),NT_head);
+	}
+	return;
+}
+int main()
+{
+	FILE *fp;
+	char buf[100];
+	int i,n;
+	long offset;
+	IMAGE_DOS_HEADER DOS_head;// dos head
+	IMAGE_NT_HEADERS32 NT_head;//  NT head
+	IMAGE_SECTION_HEADER *section_p;
+	// Open a file 
+	printf("Open file path:");
+	scanf("%s",buf);
+	if((fp=fopen(buf,"r"))==NULL)
+	{
+		printf("can not open file \n");
+		exit(0);
+	}
+	fd=fileno(fp);
+	// read DOS head
+	fread(&DOS_head,sizeof(IMAGE_DOS_HEADER),1,fp);
+	if(DOS_head.e_magic!=0x5a4d)	//判断是否为MZ 
+	{
+		printf("Dos head missing ! Or it is not a PE \n Exit .");
+		exit(0);
+	}
+	//printf("%08X\n",DOS_head.e_magic);
+	offset=DOS_head.e_lfanew;	//nt头的偏移 
+	//rewind(fp);
+	//printf("To NT head :%08X\n",offset);
+	fseek(fp,offset,SEEK_SET);
+//	printf("ftell=%ld\n",ftell(fp));
+	
+	//read NT head 
+	fread(&NT_head,sizeof(IMAGE_NT_HEADERS32),1,fp);
+	if(NT_head.Signature!=0x4550)	//判断是否为PE 
+	{
+		printf("Not PE ! \n Exit .\n");
+		exit(0);
+	}
+	
+	//Section informations 
+	n=NT_head.FileHeader.NumberOfSections;
+	section_p=(IMAGE_SECTION_HEADER*)malloc(n*sizeof(IMAGE_SECTION_HEADER));
+	fread(section_p,sizeof(IMAGE_SECTION_HEADER),n,fp);		//读取n个节区的内容 
+	
+	menu(offset,NT_head,section_p);
+	//print some FILE Information
+	//file_head(offset,NT_head);
+	//Optional_head(offset+sizeof(NT_head.FileHeader),NT_head);
+	exit(0);
+}
