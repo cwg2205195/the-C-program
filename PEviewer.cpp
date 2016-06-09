@@ -3,6 +3,22 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
+#include<ctype.h>
+int fd;
+FILE *fp;
+IMAGE_DOS_HEADER DOS_head;// dos head
+IMAGE_NT_HEADERS32 NT_head;//  NT head
+IMAGE_NT_HEADERS64 NT_head64;//64 bits head
+IMAGE_SECTION_HEADER *section_p,*tmp;//section information
+IMAGE_OPTIONAL_HEADER32 opt32;
+IMAGE_OPTIONAL_HEADER64 opt64;
+IMAGE_IMPORT_DESCRIPTOR *iats;
+typedef struct IID_List
+{
+	IMAGE_IMPORT_DESCRIPTOR *p;
+	struct IID_List *next;	
+}IID_LIST;
+IID_LIST iid_head;
 void file_head(int offset,IMAGE_NT_HEADERS32 NT_head)	//Done
 {
 	/*typedef struct _IMAGE_FILE_HEADER {
@@ -14,6 +30,17 @@ void file_head(int offset,IMAGE_NT_HEADERS32 NT_head)	//Done
       WORD SizeOfOptionalHeader;
       WORD Characteristics;
     } IMAGE_FILE_HEADER,*/
+    /* typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+      __C89_NAMELESS union {
+	DWORD Characteristics;
+	DWORD OriginalFirstThunk;
+      } DUMMYUNIONNAME;
+      DWORD TimeDateStamp;
+
+      DWORD ForwarderChain;
+      DWORD Name;
+      DWORD FirstThunk;
+    } IMAGE_IMPORT_DESCRIPTOR;*/
     offset+=4;
 	printf("\nNT_HEADER32\n\n\n");
 	printf("Offset		value		description\n");
@@ -92,15 +119,41 @@ void Optional_head(int offset,IMAGE_NT_HEADERS32 NT_head)
  } 
  void IAT(IMAGE_DATA_DIRECTORY data)
 {
-	unsigned int offset=data.VirtualAddress;
-	lseek(fd,offset,SEEK_SET);
+	unsigned int offset=data.VirtualAddress,offset1;
+	IMAGE_IMPORT_DESCRIPTOR IID;
+	IMAGE_SECTION_HEADER  *tmp=section_p;
+	char ch;
+	int i=4;
+	printf("\n\n3 RVA=%X && ftell=%d\n\n",offset,ftell(fp));
+	while(offset>section_p->VirtualAddress)
+	{
+		printf("Section Info: RVA=%X RawOffset =%X\n",section_p->VirtualAddress,section_p->PointerToRawData);
+		section_p++;
+	}
+	section_p--;
+	printf("Section Info: RVA=%X RawOffset =%X\n",section_p->VirtualAddress,section_p->PointerToRawData);
+	offset=offset-section_p->VirtualAddress+section_p->PointerToRawData; //计算出文件中的偏移地址 
+	printf("\n\n1 RVA=%X && ftell=%d\n\n",offset,ftell(fp));
+	if(!fseek(fp,offset,DOS_head.e_lfanew))
+		printf("Fseek successful!\n");
+	fread(&IID,sizeof(IMAGE_IMPORT_DESCRIPTOR),1,fp);
+//	lseek(fd,offset,DOS_head.e_lfanew);
+//	read(fd,&IID,sizeof(IMAGE_IMPORT_DESCRIPTOR)); 
+	printf("\n\n2 RVA=%X && ftell=%d\n\n",offset,ftell(fp));
+	while(IID.Name>section_p->VirtualAddress)
+	section_p++;
+	section_p--;
+	offset1=IID.Name-section_p->VirtualAddress+section_p->PointerToRawData;
+	printf("In IAT \n Name offset @ %x %d\n",offset1,offset1);
 //	printf("Offset=%08X=%d\n",offset,offset);
 //	printf("Size=%X=%d",data.Size,data.Size);
+	section_p=tmp;
 	return;
 }
 void dataDir(IMAGE_NT_HEADERS32 NT_head,IMAGE_SECTION_HEADER *section_p)
 {
 	int i=0,j; 
+	IMAGE_SECTION_HEADER *tmp=section_p;//back up the original pointer
 	IAT(NT_head.OptionalHeader.DataDirectory[1]);
 	printf("\n------------------------------------\n");
 	printf("Offset		value		description\n");
@@ -120,6 +173,7 @@ void dataDir(IMAGE_NT_HEADERS32 NT_head,IMAGE_SECTION_HEADER *section_p)
       DWORD VirtualAddress;
       DWORD Size;
     } IMAGE_DATA_DIRECTORY,*PIMAGE_DATA_DIRECTORY;*/
+    section_p=tmp;//  restore the original pointer
 	return;
 }
 void menu(int offset,IMAGE_NT_HEADERS32 NT_head,IMAGE_SECTION_HEADER *section_p) 
@@ -160,52 +214,119 @@ void menu(int offset,IMAGE_NT_HEADERS32 NT_head,IMAGE_SECTION_HEADER *section_p)
 }
 int main()
 {
-	FILE *fp;
-	char buf[100];
-	int i,n;
-	long offset;
-	IMAGE_DOS_HEADER DOS_head;// dos head
-	IMAGE_NT_HEADERS32 NT_head;//  NT head
-	IMAGE_SECTION_HEADER *section_p;
-	// Open a file 
+	char buf[100],ch;
+	int i,n,flag=0,j=0,tmp1,tmp2,section_addr[16]={0},count,file_size;
+	long offset,offset1;
+	IID_LIST *cp,*pp;
+	DWORD offset2;
+	// ------------Open a file ---------------
 	printf("Open file path:");
 	scanf("%s",buf);
-	if((fp=fopen(buf,"r"))==NULL)
+	if((fp=fopen(buf,"r"))==NULL)	//打开文件 
 	{
 		printf("can not open file \n");
 		exit(0);
 	}
 	fd=fileno(fp);
-	// read DOS head
+	fseek(fp,0,SEEK_END);//get the file size
+	file_size=ftell(fp);
+	rewind(fp);
+	// -----------read DOS head-----------------
 	fread(&DOS_head,sizeof(IMAGE_DOS_HEADER),1,fp);
-	if(DOS_head.e_magic!=0x5a4d)	//鍒ゆ柇鏄惁涓篗Z 
+	if(DOS_head.e_magic!=0x5a4d)	//判断是否为MZ 
 	{
 		printf("Dos head missing ! Or it is not a PE \n Exit .");
 		exit(0);
 	}
-	//printf("%08X\n",DOS_head.e_magic);
-	offset=DOS_head.e_lfanew;	//nt澶寸殑鍋忕Щ 
-	//rewind(fp);
-	//printf("To NT head :%08X\n",offset);
+	//--------------Read NT head-------------------
+	offset=DOS_head.e_lfanew;	//nt头的偏移 
 	fseek(fp,offset,SEEK_SET);
-//	printf("ftell=%ld\n",ftell(fp));
-	
-	//read NT head 
 	fread(&NT_head,sizeof(IMAGE_NT_HEADERS32),1,fp);
-	if(NT_head.Signature!=0x4550)	//鍒ゆ柇鏄惁涓篜E 
+	if(NT_head.Signature!=0x4550)	//判断是否为PE 
 	{
 		printf("Not PE ! \n Exit .\n");
 		exit(0);
 	}
-	
-	//Section informations 
+	//if it's a 64 bits file
+	if(NT_head.FileHeader.SizeOfOptionalHeader==sizeof(IMAGE_NT_HEADERS64))
+		{
+			fseek(fp,offset,SEEK_SET);
+			fread(&NT_head64,sizeof(IMAGE_NT_HEADERS64),1,fp);
+			flag=1;//64bits  flag=1
+		}
+		
+	//------------Read Section informations ------------------
 	n=NT_head.FileHeader.NumberOfSections;
-	section_p=(IMAGE_SECTION_HEADER*)malloc(n*sizeof(IMAGE_SECTION_HEADER));
-	fread(section_p,sizeof(IMAGE_SECTION_HEADER),n,fp);		//璇诲彇n涓妭鍖虹殑鍐呭 
+	section_p=(IMAGE_SECTION_HEADER*)malloc(n*sizeof(IMAGE_SECTION_HEADER));//Allocating section space
+	fread(section_p,sizeof(IMAGE_SECTION_HEADER),n,fp);		//读取n个节区的内容 
+	tmp=section_p;		//back up the original pointer
+	for(i=0;i<n;i++)
+		{
+			section_addr[i]=section_p->VirtualAddress;
+			section_p++;
+		}
+	section_p=tmp;		//resrote section pointer
 	
+	//---------------Read IAT (IMPORT ADDRESS TABLE)-------------------
+	if(!flag)	//32bits PE file
+		{		
+			//offset1 serves as pointer to  IAT(IID:IMAGE_IMPORT_DESCRIPOTR)
+			offset1=NT_head.OptionalHeader.DataDirectory[1].VirtualAddress;
+			i=0;
+			while(offset1-section_addr[i]>0)i++;
+			if(i>0)
+				i--;	//Calculating the raw offset
+			offset1=offset1-(section_p+i)->VirtualAddress+(section_p+i)->PointerToRawData;
+			fseek(fp,offset1,SEEK_SET);//Go to the IID 
+			//Allocate some space for the IIDs
+			iats=(IMAGE_IMPORT_DESCRIPTOR*)malloc(NT_head.OptionalHeader.DataDirectory[1].Size);
+			fread(iats,NT_head.OptionalHeader.DataDirectory[1].Size,1,fp);
+			count=NT_head.OptionalHeader.DataDirectory[1].Size/sizeof(IMAGE_IMPORT_DESCRIPTOR);
+
+			
+
+			for(i=0;i<count;i++)
+			{	//(((((((output the DLL names )))))))))
+				tmp1=(iats+i)->Name;	//tmp1 serves as the offset to the Name
+				j=0;
+				while(tmp1-section_addr[j]>0)j++;
+				if(j>0)
+					j--;
+				tmp1=tmp1-section_addr[j]+(section_p+j)->PointerToRawData;
+				if(tmp1>file_size) //in case the raw offset larger than the file_size
+					break;
+				fseek(fp,tmp1,SEEK_SET);
+				while((ch=fgetc(fp))!='.')
+					if(isalpha(ch)||(ch>='0'&&ch<='9'))
+					putc(ch,stdout);
+					else
+						break;
+				if(i<count-1)printf(".dll\n");
+				
+				//(((output the API name address)))
+				tmp2=(iats+i)->OriginalFirstThunk;
+				j=0;
+				while(tmp2-section_addr[j]>0)j++;
+				if(j>0)
+					j--;
+				tmp2=tmp2-section_addr[j]+(section_p+j)->PointerToRawData;
+				fseek(fp,tmp2,SEEK_SET);
+				fread(&offset2,sizeof(DWORD),1,fp);
+			/*	j=0;
+				while(offset2-section_addr[j]>0)
+					if(j+1<NT_head.FileHeader.NumberOfSections)j++;
+					else	break;
+				if(j>0)
+					j--;
+				offset2=offset2-section_addr[j]+(section_p+j)->PointerToRawData;*/
+				printf("API Name RVA @ %X\n",offset2);
+			}
+		}
+	else		//64bits PE　file 
+		{
+			n=NT_head64.FileHeader.NumberOfSections;
+		}	
+
 	menu(offset,NT_head,section_p);
-	//print some FILE Information
-	//file_head(offset,NT_head);
-	//Optional_head(offset+sizeof(NT_head.FileHeader),NT_head);
 	exit(0);
 }
