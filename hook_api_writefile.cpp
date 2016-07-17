@@ -32,6 +32,7 @@ BOOL OnExceptionDebugEvent(LPDEBUG_EVENT pde)
 	DWORD dwNumOfBytesToWrite,dwAddrOfBuffer,i;
 	PEXCEPTION_RECORD per=&pde->u.Exception.ExceptionRecord;
 	//when the exception code is int3
+	printf("exception code =%X @ %X \n",per->ExceptionCode,per->ExceptionAddress);
 	if(EXCEPTION_BREAKPOINT==per->ExceptionCode)
 	{
 		printf("Got int 3 \n");
@@ -77,7 +78,7 @@ BOOL OnExceptionDebugEvent(LPDEBUG_EVENT pde)
 			
 			//#9.change the EIP of the context to WriteFile()
 			ctx.Eip=(DWORD)g_pfWriteFile;
-			SetThreadContext(g_cpdi.hProcess,&ctx);
+			SetThreadContext(g_cpdi.hThread,&ctx);
 			
 			//#10.run the debuged process
 			ContinueDebugEvent(pde->dwProcessId,pde->dwThreadId,DBG_CONTINUE);
@@ -109,7 +110,7 @@ void DebugLoop()
 		//异常事件
 		else if (EXCEPTION_DEBUG_EVENT==de.dwDebugEventCode) 
 			{
-				printf("Exception debug event !\n");
+				printf("Exception debug event !code =%X\n",de.dwDebugEventCode);
 				if(OnExceptionDebugEvent(&de))
 					{
 						printf("on exception debug event\n");
