@@ -1,0 +1,82 @@
+#include<stdio.h> 
+#include<unistd.h>
+#include<windows.h>
+#include<winnt.h>
+int file_align;
+void section_inf(IMAGE_SECTION_HEADER *p,int section_count)
+{
+	int i,num=0,disposable,max=0,off=0;
+	puts("name	raw_size	virtual_size	FOA		disposable	From		To");
+	while(num<section_count)
+	{
+		i=0;
+		while(i<IMAGE_SIZEOF_SHORT_NAME)		//output the section name
+		putc((p+num)->Name[i++],stdout);
+		printf("%08X	%08X	%08X",(p+num)->SizeOfRawData,(p+num)->Misc.VirtualSize,(p+num)->PointerToRawData);
+		disposable=(int)((p+num)->SizeOfRawData)-(int)((p+num)->Misc.VirtualSize);
+		if(disposable>0x0)
+			printf("	%08X	%08X	%08X",disposable,(p+num)->SizeOfRawData-disposable+(p+num)->PointerToRawData,(p+num)->SizeOfRawData+(p+num)->PointerToRawData);
+		else
+			printf("	N\\A		N\\A		N\\A");
+		//p+=sizeof(IMAGE_SECTION_HEADER);
+		if(max<disposable)
+			{
+				off=(p+num)->SizeOfRawData-disposable+(p+num)->PointerToRawData;
+				max=disposable;
+			}
+		printf("\n");
+		num++;
+	}
+	printf("\n\n\nMaximum disposable size is %X @offset	%X\n",max,off);
+}
+int main()
+{
+	FILE *fp;
+	IMAGE_DOS_HEADER dh;
+	IMAGE_NT_HEADERS32 nth;
+	IMAGE_NT_HEADERS64 nth64;
+	char path[100];
+	int sections;
+	IMAGE_SECTION_HEADER *section_p;
+	printf("Enter file path:");
+	memset(path,0,100);
+	scanf("%s",path);
+	if((fp=fopen(path,"r"))==NULL)
+	{
+		puts("can not open file !\n");
+		return 0;
+	}
+	//-------------------read DOS header----------
+	fread(&dh,sizeof(IMAGE_DOS_HEADER),1,fp);
+	if(dh.e_magic!=0x5a4d)	//判断是否为MZ 
+	{
+		printf("Dos head missing ! Or it is not a PE \n Exit .");
+		exit(0);
+	}
+	//--------------------Go to NT header and read it ---------------------
+	fseek(fp,dh.e_lfanew,SEEK_SET);
+	fread(&nth,sizeof(IMAGE_NT_HEADERS32),1,fp);
+	if(nth.Signature!=0x4550)	//判断是否为PE 
+	{
+		printf("Not PE ! \n Exit .\n");
+		exit(0);
+	}
+	//--------------------Distinguish 32 bits or 64 bits------------------------
+	sections=nth.FileHeader.NumberOfSections;
+	if(0x8664==nth.FileHeader.Machine)	//file is 64 bits
+	{
+		printf("\n64 bits file \n");
+		rewind(fp);
+		fseek(fp,dh.e_lfanew,SEEK_SET);
+	//	fseek(fp,-sizeof(IMAGE_NT_HEADERS32),SEEK_CUR);  //go back and read 64bits header
+		fread(&nth64,sizeof(IMAGE_NT_HEADERS64),1,fp);
+		sections=nth64.FileHeader.NumberOfSections;
+	}
+	
+	file_align=nth.OptionalHeader.FileAlignment;
+	section_p=(IMAGE_SECTION_HEADER*)malloc(sizeof(IMAGE_SECTION_HEADER)*sections);		//allocate memory for 
+	fread(section_p,sizeof(IMAGE_SECTION_HEADER),sections,fp);		//section information and then read information
+	section_inf(section_p,sections);
+	getchar();
+	return 0;
+}
