@@ -1,0 +1,43 @@
+#include<stdio.h>
+#include<stdlib.h>
+int getRandom(int min,int max)
+{
+	if(min>=max)
+		return min==max;
+	int *rand;		//this is what we got
+	rand=(int *)malloc(sizeof(int));
+//	printf("\ntest rand=%d\n",(int)rand);
+	if((int)rand>=min&&(int)rand<=max)
+		return (int)rand;
+		
+	if((int)rand>max){
+			int tmp=(int)rand%max;
+			if(tmp>=min&&tmp<=max)
+				return tmp;
+			tmp=tmp%(max-min)+min;// i don't know whether i am right or wrong
+			return tmp;		
+				
+	}
+	
+	if((int)rand<min){
+		return ((int)rand%(max-min)+min);
+	}
+	
+}
+int main()
+{
+	int max;		//ended at 
+	int min;		//start from
+	puts("input the range [min,max]:");
+	if(scanf("%d%d",&min,&max)){
+		for(int i=0;i<30;i++)
+		{
+			printf("\ngot  %d \n",getRandom(min,max));
+	
+
+		}
+	}
+	else
+		puts("I need two numbers\n");
+	return 0;
+}
